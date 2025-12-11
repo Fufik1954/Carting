@@ -39,12 +39,6 @@ public class KartEngine : MonoBehaviour
 
     private float _invInertiaFactor;
 
-
-    /// <summary>
-    /// Возвращает момент на коленвале в зависимости от газа.
-    /// throttleInput ожидается в диапазоне [-1; 1]. Используем только газ [0; 1].
-    /// </summary>
-    /// 
     private void Start()
     {
         CurrentRpm = _idleRpm;
@@ -56,7 +50,7 @@ public class KartEngine : MonoBehaviour
 
     public float Simulate(float throttleInput, float forwardSpeed, float deltaTime)
     {
-        // 1. Сглаживание газа (реальная педаль не мгновенная)
+        // 1. Сглаживание газа 
         float targetThrottle = Mathf.Clamp(throttleInput, -1f, 1f);
         SmoothedThrottle = Mathf.MoveTowards(SmoothedThrottle, targetThrottle,
                                             _throttleResponse * deltaTime);
@@ -71,11 +65,10 @@ public class KartEngine : MonoBehaviour
         float frictionTorque = _engineFrictionCoeff * CurrentRpm;        // Внутреннее трение
         float loadTorque = _loadTorqueCoeff * Mathf.Abs(forwardSpeed);   // Нагрузка от движения
 
-        // 4. Чистый момент (что осталось на раскрутку)
+        // 4. Чистый момент 
         float netTorque = driveTorque - frictionTorque - loadTorque;
 
-        // 5. Расчет изменения RPM (основное уравнение: J * ω_dot = M)
-        // rpm_dot = M * 60 / (2πJ) = M * invInertiaFactor
+        // 5. Расчет изменения RPM 
         float rpmDot = netTorque * _invInertiaFactor;
 
         // 6. Интегрируем

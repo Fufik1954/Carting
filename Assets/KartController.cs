@@ -21,16 +21,14 @@ public class KartController : MonoBehaviour
     [SerializeField] private Transform _rearLeftWheel;
     [SerializeField] private Transform _rearRightWheel;
 
-    // For wheel rotation
     private Quaternion _frontLeftInitialLocalRot;
     private Quaternion _frontRightInitialLocalRot;
 
     [Header("Input (New Input System)")]
     [SerializeField] private InputActionReference _moveActionRef;
 
-    // Input values
-    private float _throttleInput; // -1..1 (газ/тормоз)
-    private float _steerInput;    // -1..1 (руль)
+    private float _throttleInput;
+    private float _steerInput; 
 
     [Header("Handbrake")]
     [SerializeField] private InputActionReference _handbrakeActionRef;
@@ -45,12 +43,10 @@ public class KartController : MonoBehaviour
     private float _acceleration;
 
     private bool _isHandbrakePressed;
-    private float _originalLateralStiffness; // Для сохранения оригинального значения
+    private float _originalLateralStiffness; 
 
-    // Private fields
     private Rigidbody _rb;
 
-    // Normal forces (for debugging/display)
     private float _frontLeftNormalForce;
     private float _frontRightNormalForce;
     private float _rearLeftNormalForce;
@@ -67,7 +63,7 @@ public class KartController : MonoBehaviour
 
     private void Update()
     {
-        ReadInput();     // Читаем ввод каждый кадр
+        ReadInput();    
         RotateFrontWheels(); // Поворачиваем колеса
     }
 
@@ -78,7 +74,6 @@ public class KartController : MonoBehaviour
         _acceleration = velocityChange.magnitude / Time.fixedDeltaTime;
         _lastVelocity = _rb.linearVelocity;
 
-        // Обнуляем силы каждый кадр
         _totalRearLongitudinalForce = 0f;
         _totalFrontLateralForce = 0f;
 
@@ -89,27 +84,19 @@ public class KartController : MonoBehaviour
         ApplyWheelForces(_rearRightWheel, _rearRightNormalForce, isDriven: true);
     }
 
-
-    /// <summary>
-    /// Calculate static weight distribution (Этап 1)
-    /// </summary>
     private void ComputeStaticWheelLoads()
     {
         // 1. Получаем массу из Rigidbody
         float mass = _rb.mass;
 
-        // 2. Рассчитываем общий вес: W = m * g
+        // 2. Рассчитываем общий вес
         float totalWeight = mass * _gravity;
 
         // 3. Распределяем вес по осям
-        //    W_f = frontShare * W
-        //    W_r = (1 - frontShare) * W
         float frontWeight = totalWeight * _kartConfig.frontAxleShare;
         float rearWeight = totalWeight * (1f - _kartConfig.frontAxleShare);
 
         // 4. Делим поровну между левым и правым колесом на каждой оси
-        //    N_FL = N_FR = W_f / 2
-        //    N_RL = N_RR = W_r / 2
         _frontLeftNormalForce = frontWeight * 0.5f;
         _frontRightNormalForce = frontWeight * 0.5f;
 
@@ -117,9 +104,6 @@ public class KartController : MonoBehaviour
         _rearRightNormalForce = rearWeight * 0.5f;
     }
 
-    /// <summary>
-    /// Initialize wheel rotations (Этап 2)
-    /// </summary>
     private void Initialize()
     {
 
@@ -129,9 +113,6 @@ public class KartController : MonoBehaviour
             _frontRightInitialLocalRot = _frontRightWheel.localRotation;
     }
 
-    /// <summary>
-    /// Read input from New Input System (Этап 2)
-    /// </summary>
     private void ReadInput()
     {
         Vector2 move = _moveActionRef.action.ReadValue<Vector2>();
@@ -142,9 +123,6 @@ public class KartController : MonoBehaviour
  
     }
 
-    /// <summary>
-    /// Rotate front wheels based on input (Этап 2)
-    /// </summary>
     private void RotateFrontWheels()
     {
         float steerAngle = _kartConfig.maxSteerAngle * _steerInput;
@@ -156,61 +134,25 @@ public class KartController : MonoBehaviour
             _frontRightWheel.localRotation = _frontRightInitialLocalRot * steerRotation;
     }
 
-    /// <summary>
-    /// Enable input actions (Этап 2)
-    /// </summary>
     private void OnEnable()
     {
         if (_moveActionRef != null && _moveActionRef.action != null)
             _moveActionRef.action.Enable();
 
-        // Включаем ручной тормоз (ЭТАП 7)
+        // Включаем ручной тормоз 
         if (_handbrakeActionRef != null && _handbrakeActionRef.action != null)
             _handbrakeActionRef.action.Enable();
     }
 
-    /// <summary>
-    /// Disable input actions (Этап 2)
-    /// </summary>
     private void OnDisable()
     {
         if (_moveActionRef != null && _moveActionRef.action != null)
             _moveActionRef.action.Disable();
 
-        // Выключаем ручной тормоз (ЭТАП 7)
+        // Выключаем ручной тормоз 
         if (_handbrakeActionRef != null && _handbrakeActionRef.action != null)
             _handbrakeActionRef.action.Disable();
     }
-
-    /// <summary>
-    /// Apply engine force to rear wheels (Этап 3)
-    /// </summary>
-    //private void ApplyDriverForceToRearWheels()
-    //{
-    //    Vector3 bodyForward = transform.forward;
-    //    float speedAlongForward = Vector3.Dot(_rb.linearVelocity, bodyForward);
-
-    //    // Ограничение максимальной скорости вперед
-    //    if (_throttleInput > 0f && speedAlongForward > _maxSpeed)
-    //        return;
-
-    //    // Ограничение скорости назад (опционально)
-    //    if (_throttleInput < 0f && speedAlongForward < -_maxSpeed * 0.5f)
-    //        return;
-
-    //    float driveTorque = _engineTorque * _throttleInput;
-    //    float driveForce = driveTorque / _wheelRadius; // F = M / r
-
-    //    // Делим на два задних колеса
-    //    Vector3 forcePerWheel = bodyForward * (driveForce * 0.5f);
-
-    //    // Применяем силу к точкам крепления колес
-    //    if (_rearLeftWheel != null)
-    //        _rb.AddForceAtPosition(forcePerWheel, _rearLeftWheel.position, ForceMode.Force);
-
-    //    if (_rearRightWheel != null)
-    //        _rb.AddForceAtPosition(forcePerWheel, _rearRightWheel.position, ForceMode.Force);
-    //}
 
     private void ApplyWheelForces(Transform wheel, float normalForce, bool isDriven)
     {
@@ -234,7 +176,7 @@ public class KartController : MonoBehaviour
         if (wheel == _rearLeftWheel) _rearLeftVLat = vLat;
         if (wheel == _rearRightWheel) _rearRightVLat = vLat;
 
-        // 1) продольная сила от двигателя — только задняя ось
+        // 1) продольная сила от двигателя
         if (isDriven)
         {
             Vector3 bodyForward = transform.forward;
@@ -248,9 +190,8 @@ public class KartController : MonoBehaviour
             );
 
             float totalWheelTorque = engineTorque * _kartConfig.gearRatio * _drivetrainEfficiency;
-            float wheelTorque = totalWheelTorque * 0.5f; // два задних колеса
+            float wheelTorque = totalWheelTorque * 0.5f; 
 
-            // ЕСЛИ РУЧНОЙ ТОРМОЗ НАЖАТ - ИГНОРИРУЕМ ДВИГАТЕЛЬ
             if (!(_isHandbrakePressed && isDriven && _handbrakeEnabled))
             {
                 Fx += wheelTorque / _kartConfig.wheelRadius;
@@ -265,8 +206,7 @@ public class KartController : MonoBehaviour
         {
             currentRollingResistance *= _handbrakeDragMultiplier;
 
-            // ДОБАВЛЯЕМ СИЛУ БЛОКИРОВКИ КОЛЕС
-            // Сила, направленная ПРОТИВ движения колеса
+            // Сила, направленная против движения колеса
             float brakeForce = -Mathf.Sign(vLong) * normalForce * _kartConfig.frictionCoefficient * 0.8f;
             Fx += brakeForce;
         }
@@ -284,12 +224,12 @@ public class KartController : MonoBehaviour
 
         Fy += -currentLateralStiffness * vLat;
 
-        // 4) фрикционный круг (ВАЖНО: применяется к СУММАРНОЙ силе)
+        // 4) фрикционный круг 
         // При ручном тормозе ослабляем фрикционный круг для задних колес
         float currentFrictionCoefficient = _kartConfig.frictionCoefficient;
         if (_isHandbrakePressed && isDriven && _handbrakeEnabled)
         {
-            currentFrictionCoefficient *= 0.3f; // Уменьшаем общее сцепление на 70%
+            currentFrictionCoefficient *= 0.3f; 
         }
 
         float frictionLimit = currentFrictionCoefficient * normalForce;
@@ -303,11 +243,11 @@ public class KartController : MonoBehaviour
         }
 
         // Собираем силы для телеметрии
-        if (isDriven) // Задние колеса
+        if (isDriven) 
         {
             _totalRearLongitudinalForce += Fx;
         }
-        else // Передние колеса
+        else 
         {
             _totalFrontLateralForce += Mathf.Abs(Fy);
         }
