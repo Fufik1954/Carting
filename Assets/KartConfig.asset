@@ -14,46 +14,46 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   mass: 50
   frictionCoefficient: 4
-  frontLateralStiffness: 1000
+  frontLateralStiffness: 800
   rearLateralStiffness: 80
-  rollingResistance: 0.5
+  rollingResistance: 0.07
   maxSteerAngle: 30
   engineTorqueCurve:
     serializedVersion: 2
     m_Curve:
     - serializedVersion: 3
       time: 1000
-      value: 200
-      inSlope: 0.09
-      outSlope: 0.09
-      tangentMode: 0
+      value: 80
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 136
       weightedMode: 0
       inWeight: 0.33333334
       outWeight: 0.33333334
     - serializedVersion: 3
       time: 3000
-      value: 380
-      inSlope: 0.040000003
-      outSlope: 0.040000003
-      tangentMode: 0
+      value: 120
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 136
       weightedMode: 0
       inWeight: 0.33333334
       outWeight: 0.33333334
     - serializedVersion: 3
       time: 6000
-      value: 350
-      inSlope: -0.030000001
-      outSlope: -0.030000001
-      tangentMode: 0
+      value: 100
+      inSlope: -0.01
+      outSlope: -0.01
+      tangentMode: 136
       weightedMode: 0
       inWeight: 0.33333334
       outWeight: 0.33333334
     - serializedVersion: 3
       time: 8000
-      value: 250
-      inSlope: -0.05
-      outSlope: -0.05
-      tangentMode: 0
+      value: 70
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 136
       weightedMode: 0
       inWeight: 0.33333334
       outWeight: 0.33333334
